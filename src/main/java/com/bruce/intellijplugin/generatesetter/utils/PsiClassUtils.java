@@ -16,13 +16,12 @@ package com.bruce.intellijplugin.generatesetter.utils;
 
 import com.bruce.intellijplugin.generatesetter.actions.GenerateAllSetterAction;
 import com.intellij.psi.PsiClass;
+import com.intellij.psi.PsiField;
+import com.intellij.psi.PsiMember;
 import com.intellij.psi.PsiMethod;
 import org.jetbrains.annotations.NotNull;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 /**
  * @Author bruce.ge
@@ -104,6 +103,11 @@ public class PsiClassUtils {
                     return true;
                 }
             }
+            for (PsiField field : psiClass.getFields()) {
+                if (isValidField(field)) {
+                    return true;
+                }
+            }
             psiClass = psiClass.getSuperClass();
         }
         return false;
@@ -123,5 +127,19 @@ public class PsiClassUtils {
             psiClass = psiClass.getSuperClass();
         }
         return false;
+    }
+
+    public static List<PsiField> extractPublicField(PsiClass psiClass) {
+        ArrayList<PsiField> psiFields = new ArrayList<>();
+        for (PsiField field : psiClass.getFields()) {
+            if (isValidField(field)) {
+                psiFields.add(field);
+            }
+        }
+        return psiFields;
+    }
+
+    private static boolean isValidField(PsiField field) {
+        return field.hasModifierProperty("public") && !field.hasModifierProperty("static");
     }
 }

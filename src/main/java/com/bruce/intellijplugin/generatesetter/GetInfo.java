@@ -14,7 +14,9 @@
 
 package com.bruce.intellijplugin.generatesetter;
 
+import com.intellij.psi.PsiMember;
 import com.intellij.psi.PsiMethod;
+import com.intellij.psi.PsiVariable;
 
 import java.util.List;
 import java.util.Map;
@@ -27,17 +29,17 @@ import java.util.Map;
 public class GetInfo {
     private String paramName;
 
-    private List<PsiMethod> getMethods;
+    private List<PsiMember> getMethods;
 
 
-    private Map<String,PsiMethod> nameToMethodMap;
+    private Map<String,PsiMember> nameToMethodMap;
 
 
-    public Map<String, PsiMethod> getNameToMethodMap() {
+    public Map<String, PsiMember> getNameToMethodMap() {
         return nameToMethodMap;
     }
 
-    public void setNameToMethodMap(Map<String, PsiMethod> nameToMethodMap) {
+    public void setNameToMethodMap(Map<String, PsiMember> nameToMethodMap) {
         this.nameToMethodMap = nameToMethodMap;
     }
 
@@ -49,11 +51,11 @@ public class GetInfo {
         this.paramName = paramName;
     }
 
-    public List<PsiMethod> getGetMethods() {
+    public List<PsiMember> getGetMethods() {
         return getMethods;
     }
 
-    public void setGetMethods(List<PsiMethod> getMethods) {
+    public void setGetMethods(List<PsiMember> getMethods) {
         this.getMethods = getMethods;
     }
 }

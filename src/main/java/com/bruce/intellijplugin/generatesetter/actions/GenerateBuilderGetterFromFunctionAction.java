@@ -76,9 +76,9 @@ public class GenerateBuilderGetterFromFunctionAction extends GenerateAllSetterBa
         for (PsiField psiField : psiFields) {
             builder.append(splitText).append("\t").append("\t");
             String fieldName = psiField.getName();
-            PsiMethod s = info.getNameToMethodMap().get(StringUtils.lowerCase(fieldName));
+            PsiMember s = info.getNameToMethodMap().get(StringUtils.lowerCase(fieldName));
             if (s != null) {
-                String getMethodText = info.getParamName() + "." + s.getName() + "()";
+                String getMethodText = createPsiMemberCodeGenerateHelper(s).extractGetMethodText(info.getParamName());
                 builder.append(".").append(fieldName).append("(").append(getMethodText).append(")");
             } else {
                 builder.append(".").append(fieldName).append("()");

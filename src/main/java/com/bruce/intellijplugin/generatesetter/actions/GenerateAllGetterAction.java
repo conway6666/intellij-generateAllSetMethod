@@ -123,7 +123,7 @@ public class GenerateAllGetterAction extends PsiElementBaseIntentionAction {
             PsiClassReferenceType referenceType = (PsiClassReferenceType) psiType;
             resolvePsiClassParameter(referenceType);
         }
-        List<PsiMethod> methodList = PsiClassUtils.extractGetMethod(psiClass);
+        List<PsiMember> methodList = new ArrayList<>(PsiClassUtils.extractGetMethod(psiClass));
         if (methodList.size() == 0) {
             return;
         }
@@ -134,10 +134,10 @@ public class GenerateAllGetterAction extends PsiElementBaseIntentionAction {
         PsiToolUtils.addImportToFile(psiDocumentManager, (PsiJavaFile) containingFile, document, newImportList);
     }
 
-    private String generateStringForGetter(String generateName, List<PsiMethod> methodList, String splitText, Set<String> newImportList) {
+    private String generateStringForGetter(String generateName, List<PsiMember> methodList, String splitText, Set<String> newImportList) {
         StringBuilder builder = new StringBuilder();
         builder.append(splitText);
-        for (PsiMethod method : methodList) {
+        for (PsiMember method : methodList) {
             generateDefaultForOneMethod(generateName, newImportList,
                     builder, method);
             builder.append(splitText);
@@ -145,17 +145,49 @@ public class GenerateAllGetterAction extends PsiElementBaseIntentionAction {
         return builder.toString();
     }
 
-    private void generateDefaultForOneMethod(String generateName, Set<String> newImportList, StringBuilder builder, PsiMethod method) {
-        Project project = method.getProject();
-        PsiType returnType = method.getReturnType();
-        String typeName = returnType.getPresentableText();
-        String fieldType = handlerByPsiType(newImportList, project, returnType, "%s", typeName);
+    private void generateDefaultForOneMethod(String generateName, Set<String> newImportList, StringBuilder builder, PsiMember method) {
+        createPsiMemberGenerator(method).generateDefaultForOneMethod(generateName, newImportList, builder);
+    }
 
-        String methodName = method.getName();
-        String varName = methodName.replaceFirst("get", "");
-        varName = varName.substring(0, 1).toLowerCase() + varName.substring(1);
-        String str = fieldType + " " + varName + " = " + generateName + "." + methodName + "();";
-        builder.append(str);
+    PsiMemberGenerator createPsiMemberGenerator(PsiMember member) {
+        if (member instanceof PsiMethod) {
+            return new PsiMethodGenerator(member);
+        } else {
+            throw new RuntimeException(String.format("PsiMember.class=%s，PsiMemberGenerator未定义实现",member.getClass()));
+        }
+    }
+
+    abstract class PsiMemberGenerator{
+        PsiMember member;
+
+        public PsiMemberGenerator(PsiMember member) {
+            this.member = member;
+        }
+
+        abstract void generateDefaultForOneMethod(String generateName, Set<String> newImportList, StringBuilder builder);
+    }
+
+    class PsiMethodGenerator extends PsiMemberGenerator {
+
+        PsiMethod method;
+        public PsiMethodGenerator(PsiMember member) {
+            super(member);
+            method = (PsiMethod) member;
+        }
+
+        @Override
+        void generateDefaultForOneMethod(String generateName, Set<String> newImportList, StringBuilder builder) {
+            Project project = method.getProject();
+            PsiType returnType = method.getReturnType();
+            String typeName = returnType.getPresentableText();
+            String fieldType = handlerByPsiType(newImportList, project, returnType, "%s", typeName);
+
+            String methodName = method.getName();
+            String varName = methodName.replaceFirst("get", "");
+            varName = varName.substring(0, 1).toLowerCase() + varName.substring(1);
+            String str = fieldType + " " + varName + " = " + generateName + "." + methodName + "();";
+            builder.append(str);
+        }
     }
 
     protected void resolvePsiClassParameter(PsiClassType psiClassReferenceType) {
